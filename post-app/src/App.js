@@ -6,6 +6,8 @@ import { Route, Routes,useNavigate,Redirect} from 'react-router-dom';
 import Main from "./pages/Main";
 import Login from './pages/Login';
 import Logout from "./pages/Logout";
+import Footer from "./pages/Footer";
+import NewArticle from "./pages/NewArticle";
 
 function App() {
 
@@ -73,8 +75,13 @@ function App() {
         <Route path = "*" element={<div>MISSING</div>}/>
       </Routes>
       <Login show = {modalOpenLogin} onHide = {() => setModalOpenLogin(false)}  setUserId = {(e) => {setUserId(e)}}></Login>
+      {userId == "" ?
+      <></>:
+      <Footer></Footer>
+      }
     </div>
   );
 }
+
 
 export default App;

@@ -26,7 +26,7 @@ app.use(session({
   resave : false,
   saveUninitialized : false,
   cookie : {
-    maxAge : 1000*60
+    maxAge : 1000*60*60
   },
   store : MongoStore.create({
     mongoUrl : 'mongodb+srv://dbsenr0:EbJ0HJsgJcxVYcmE@post-db.ji4ajgj.mongodb.net/?retryWrites=true&w=majority&appName=post-db',
@@ -133,4 +133,8 @@ app.post("/register", async (req, res) => {
   await db.collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname})
   res.redirect("/")
 
+})
+
+app.post("/post", async (req,res) => {
+  console.log(req.body)
 })

@@ -7,14 +7,14 @@ import Main from "./pages/Main";
 import Login from './pages/Login';
 import Logout from "./pages/Logout";
 import Footer from "./pages/Footer";
-import NewArticle from "./pages/NewArticle";
+import './NewArticle.css'; // CSS 파일을 import
 
 function App() {
 
   let [modalOpenLogin, setModalOpenLogin] = useState(false);
   let [userId,setUserId] = useState("");
   let navigate = useNavigate();
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {

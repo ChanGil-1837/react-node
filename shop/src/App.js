@@ -9,6 +9,7 @@ import Detail from './routes/Detail';
 import Cart from './routes/Cart'
 import axios from 'axios';
 import { createContext } from 'react';
+import { useQueries, useQuery } from 'react-query';
 
 export let Context1 = createContext();
 
@@ -17,6 +18,11 @@ function App() {
   let [stock] = useState([10,11,12])
   let [shoes,setShoes] = useState(data);
   let navigate = useNavigate();
+
+  let result = useQuery("data", () => 
+    axios.get("https://codingapple1.github.io/userdata.json").then((a) => a.data)
+  )
+
   return (
     <div className="App">
       <Navbar bg="light" variant='light'>
@@ -25,6 +31,12 @@ function App() {
           <Nav className="me-auto">
             <Nav.Link onClick={() => { navigate("/")}} >Home</Nav.Link>
             <Nav.Link onClick={() => { navigate("/cart")}}>Cart</Nav.Link>
+          </Nav>
+          <Nav className='ms-auto'> 
+            { 
+              result.isLoading ? 'Loading' : result.data.name
+            }
+          
           </Nav>
         </Container>
       </Navbar>

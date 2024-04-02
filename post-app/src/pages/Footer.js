@@ -89,6 +89,9 @@ const Footer = () => {
             <div className="ModalWindow" onClick={e => e.stopPropagation()}>
                 <div style={{ margin: "20px" }}>
                     <h2>New Article</h2>
+                    {
+                        file != null ? <img src={URL.createObjectURL(file)} alt="preview" width="200" height="200"/> : null
+                    }
                     <Form onSubmit={handleSubmit} method = "POST">
                         <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                             <Form.Label>Title</Form.Label>

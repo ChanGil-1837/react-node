@@ -88,6 +88,22 @@ app.post("/register", async (req, res) => {
 })
 
 app.post("/post", upload.single('file'), async (req, res) => {
-  console.log(req.body)
-  console.log(req.file);
+  try {
+    const fileUrl = req.file.location;
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')} ${currentDate.getHours().toString().padStart(2, '0')}`;
+    
+    await getDB().collection('post').insertOne({
+      title: req.body.title,
+      contents: req.body.contents,
+      fileUrl: fileUrl,
+      nickname: req.user.nickname,
+      date: formattedDate
+    });
+    
+    res.status(200).send("File Upload Complete");
+  } catch(error) {
+    console.error(error);
+    res.status(500).send("Error Uploading file");
+  }
 });

@@ -6,11 +6,10 @@ import axios from 'axios';
 const Footer = () => {
     const [showRipple, setShowRipple] = useState(false);
     const [showModal, setShowModal] = useState(false);
-
+    const [file,setFile] = useState()
     const [value, setValue] = useState({
         title:"",
         contents: "",
-        file:""
     })
 
     const openModal = () => {
@@ -24,15 +23,24 @@ const Footer = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("aa")
         try {
-          var post = "http://localhost:8080/post"
-          const response = await axios.post(post, value);
-          if( response.status == 200 ) {
-            closeModal()
-          }
+            var url = "http://localhost:8080/post"
+            const formData = new FormData()
+            formData.append("title", value.title)
+            formData.append("contents", value.contents)
+            formData.append("file", file)
+            axios({
+                method:"post",
+                url:url,
+                data:formData,
+                headers:{'Content-Type':'multipart/form-data'}
+            }).then((res)=>{
+                if (res.status == 200) {
+                    closeModal()
+                }
+            })
         } catch (error) {
-          console.log("error", error);
+            console.log("error", error);
         }
     };
 
@@ -56,6 +64,18 @@ const Footer = () => {
             [e.target.name] : e.target.value,
         })
     }
+    const onChangeImg = (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        
+        
+        if(e.target.files){
+          const uploadFile = e.target.files[0]
+          formData.append('file',uploadFile)
+          setFile(uploadFile)
+        }
+    }
+
     return (
     <>
         <div className="floating-button" onClick={(e) => {handleRippleEffect(e); openModal();}}>
@@ -80,7 +100,7 @@ const Footer = () => {
                         </Form.Group>
                         <Form.Group controlId="formFileSm" className="mb-3">
                             <Form.Label >Image File</Form.Label>
-                            <Form.Control type="file" name='file' size="sm" onChange={handleChange} />
+                            <Form.Control type="file" name='file' size="sm" onChange={onChangeImg} />
                         </Form.Group>
                         <div style={{display:"flex", flexDirection:"row", justifyContent:"flex-end"}}>
                             <Button variant="secondary" style={{textAlign:"center"}} active onClick={closeModal}>

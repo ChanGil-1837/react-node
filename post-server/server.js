@@ -4,99 +4,51 @@ const cors = require('cors');
 const app = express();
 const server = require('http').createServer(app);
 const session = require('express-session')
-const passport = require('passport')
-const LocalStrategy = require('passport-local')
 const cookieParser = require('cookie-parser')
-const bcrypt = require("bcrypt")
 const MongoStore = require("connect-mongo")
+const { upload } = require('./modules/imageUploader');
+const { connectDB,ObjectId,getDB } = require('./modules/dbconnection'); 
+const {Init, passport } = require("./modules/passport")
+const dotenv = require("dotenv");
+dotenv.config()
 
-app.use(cookieParser());
+app.use(cookieParser())
 app.use(express.json())
+
+
 app.use(cors({
-  origin :"http://localhost:3000",
+  origin :process.env.REACT_SERVER,
   credentials:true,
   methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD'],
 }));
 
+connectDB().then(()=>{
+  app.listen(8080, () => {
+    console.log('http://localhost:8080 에서 서버 실행중')
+  })
+  Init(getDB(),ObjectId)
+});
 
 app.use(bodyParser.json()); 
 
 app.use(session({
-  secret: 'EbJ0HJsgJcxVYcmE',
+  secret: process.env.SECRET_KEY,
   resave : false,
   saveUninitialized : false,
   cookie : {
     maxAge : 1000*60*60
   },
   store : MongoStore.create({
-    mongoUrl : 'mongodb+srv://dbsenr0:EbJ0HJsgJcxVYcmE@post-db.ji4ajgj.mongodb.net/?retryWrites=true&w=majority&appName=post-db',
-    dbName : "post-db"
+    mongoUrl : process.env.DB_ACCESS,
+    dbName : process.env.DB_NAME
   })
 }))
+
 app.use(passport.initialize())
 app.use(passport.session()) 
 
-
-const {MongoClient, ObjectId} = require("mongodb");
-
-
-
-passport.use(new LocalStrategy({
-  usernameField: 'username',  // 사용자 이름 필드를 'username'으로 설정
-  passwordField: 'password'   // 비밀번호 필드를 'password'로 설정
-},
-
-async (username, password, done) => {
-  try {
-    let result = await db.collection('user').findOne({ username });
-    
-    if (!result) {
-      return done(null, false, { message: '아이디 DB에 없음' });
-    }
-    
-    if (await bcrypt.compare(password,result.password)) {
-      return done(null, result);
-    } else {
-      return done(null, false, { message: '비번 불일치' });
-    }
-  } catch (err) {
-    return done(err);
-  }
-}
-));
-
-passport.serializeUser((user,done) => {
-  process.nextTick( () => {
-    done(null,{id : user._id , username : user.username, nickname : user.nickname})
-  })
-})
-
-passport.deserializeUser(async (user, done) => {
-  let result = await db.collection('user').findOne({_id : new ObjectId(user.id) })
-  delete result.password
-  process.nextTick(() => {
-    return done(null, result)
-  })
-})
-
-
-let db
-const url = 'mongodb+srv://dbsenr0:EbJ0HJsgJcxVYcmE@post-db.ji4ajgj.mongodb.net/?retryWrites=true&w=majority&appName=post-db'
-new MongoClient(url).connect().then((client)=>{
-  console.log('DB연결성공')
-  db = client.db('post-db')
-  app.listen(8080, () => {
-    console.log('http://localhost:8080 에서 서버 실행중')
-  })
-}).catch((err)=>{
-  console.log(err)
-})
-
-
-
-
 app.get('/', async (요청, 응답) => {
-  let result = await db.collection('post').find().toArray();
+  let result = await getDB().collection('post').find().toArray();
   let data = {
     result :result,
     username : "",
@@ -130,11 +82,12 @@ app.get('/logout', function(req, res, next){
 
 app.post("/register", async (req, res) => {
   let password = await bcrypt.hash(req.body.password, 10)
-  await db.collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname})
+  await getDB().collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname})
   res.redirect("/")
 
 })
 
-app.post("/post", async (req,res) => {
+app.post("/post", upload.single('file'), async (req, res) => {
   console.log(req.body)
-})
+  console.log(req.file);
+});

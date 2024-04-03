@@ -34,7 +34,7 @@ const upload = multer({
 const deleteImage = (fileKey) => {
   s3.deleteObject(
     {
-      Bucket: '${버킷이름}', // S3 Bucket의 이름
+      Bucket: process.env.AWS_NAME, // S3 Bucket의 이름
       Key: fileKey, // 삭제할 파일의 키 (경로 및 파일 이름)
     },
     (err, data) => {

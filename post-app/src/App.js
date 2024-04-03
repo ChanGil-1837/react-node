@@ -14,7 +14,7 @@ function App() {
   let [modalOpenLogin, setModalOpenLogin] = useState(false);
   let [userId,setUserId] = useState("");
   let navigate = useNavigate();
-  
+  let [id, setId] = useState("");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -24,6 +24,7 @@ function App() {
           setUserId("");
         } else {
           setUserId(response.data.username);
+          setId(response.data._id);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -70,7 +71,7 @@ function App() {
         </Container>
       </Navbar>
       <Routes>
-        <Route path = "/" element = {<Main></Main>}></Route>
+        <Route path = "/" element = {<Main id = {id}></Main>}></Route>
         <Route path = "/logout" element = {<Logout/>}></Route>
         <Route path = "*" element={<div>MISSING</div>}/>
       </Routes>

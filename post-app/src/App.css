@@ -2,6 +2,7 @@
   margin-left: 10%;
   
 }
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -56,7 +57,16 @@
 
 .Main > div {
   animation: slideIn 0.5s ease-out;
+
 }
+.ModalWindow::-webkit-scrollbar {
+  display: none;
+}
+
+.modal{
+  --bs-modal-width:50% !important;
+}
+
 .ripple {
   position: fixed;
   border-radius: 50%;

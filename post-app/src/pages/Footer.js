@@ -9,7 +9,7 @@ const Footer = () => {
     const [file,setFile] = useState()
     const [value, setValue] = useState({
         title:"",
-        contents: "",
+        content: "",
     })
 
     const openModal = () => {
@@ -27,7 +27,7 @@ const Footer = () => {
             var url = "http://localhost:8080/post"
             const formData = new FormData()
             formData.append("title", value.title)
-            formData.append("contents", value.contents)
+            formData.append("content", value.content)
             formData.append("file", file)
             axios({
                 method:"post",
@@ -99,7 +99,7 @@ const Footer = () => {
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
                             <Form.Label>Contents</Form.Label>
-                            <Form.Control as="textarea" name="contents" placeholder='max length 300' rows={3} maxLength={300} onChange={handleChange}/>
+                            <Form.Control as="textarea" name="content" placeholder='max length 300' rows={3} maxLength={300} onChange={handleChange}/>
                         </Form.Group>
                         <Form.Group controlId="formFileSm" className="mb-3">
                             <Form.Label >Image File</Form.Label>

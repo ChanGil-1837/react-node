@@ -13,11 +13,12 @@ const GoogleLoginButton = (props) => {
         useOneTap
         onSuccess={async (credentialResponse) => {
           try {
-            const res = await axios.post('http://localhost:8080/login/google', { credentialResponse });
+            const res = await axios.post(process.env.REACT_APP_HOST+'/login/google', { credentialResponse });
             if(res.status === 201){
               sendData(res.data)
             } else if (res.status === 200) {
                 props.onHide()
+                props.setUserId(res.data.username)
             }
           } catch (error) {
             console.error(error);

@@ -28,9 +28,9 @@ const Login = ({show, onHide, setUserId,}) =>{
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      var post = "http://localhost:8080/login"
+      var post = process.env.REACT_APP_HOST+"/login"
       if (page=="Register") {
-        post = "http://localhost:8080/register"
+        post = process.env.REACT_APP_HOST+"/register"
       }
       const response = await axios.post(post, value);
       if( response.status == 200 ) {
@@ -55,7 +55,7 @@ const Login = ({show, onHide, setUserId,}) =>{
       >
       <div style={{padding:"15px"}}>
         {
-          page === "Login" ? <GoogleLoginButton onHide={onHide} page={handlePageChange}/> : null
+          page === "Login" ? <GoogleLoginButton setUserId={setUserId} onHide={onHide} page={handlePageChange}/> : null
         }
       
         {

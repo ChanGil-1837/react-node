@@ -9,7 +9,7 @@ const Main = (props) => {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            let response = await axios.get('http://localhost:8080/main');
+            let response = await axios.get(process.env.REACT_APP_HOST+'/main');
             props.handleData(response.data.result)
 
           } catch (error) {

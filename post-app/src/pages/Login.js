@@ -3,7 +3,9 @@ import Modal from 'react-bootstrap/Modal';
 import React,{useState,useEffect, useRef} from 'react';
 import Form from "react-bootstrap/Form";
 import axios from 'axios';
+import GoogleLoginButton from './GoogleLoginButton';
 axios.defaults.withCredentials = true;
+
 
 const Login = ({show, onHide, setUserId,}) =>{
   const [value, setValue] = useState({
@@ -12,7 +14,10 @@ const Login = ({show, onHide, setUserId,}) =>{
       nickname:""
   })
   let [page,setPage] = useState("Login")
-
+  const handlePageChange = (page, data) => {
+    setPage(page);
+    setValue(prevValue => ({ ...prevValue, username: data }));
+  }
   const handleChange = e => {
       setValue({
           ...value,
@@ -49,10 +54,13 @@ const Login = ({show, onHide, setUserId,}) =>{
         centered
       >
       <div style={{padding:"15px"}}>
+        {
+          page === "Login" ? <GoogleLoginButton onHide={onHide} page={handlePageChange}/> : null
+        }
       
         {
           page == "Login" ? <LoginPage onHide = {onHide} handleSubmit = {handleSubmit} handleChange = {handleChange} setPage={setPage} /> :
-                 <RegisterPage onHide = {onHide} handleSubmit = {handleSubmit} handleChange = {handleChange} setPage = {setPage}/>
+                 <RegisterPage onHide = {onHide} value = {value} handleSubmit = {handleSubmit} handleChange = {handleChange} setPage = {setPage}/>
         }   
 
       </div>
@@ -85,9 +93,6 @@ const LoginPage = (props) => {
           <Form.Check type="checkbox" label="Check me out" />
       </Form.Group>
       <div style={{padding:"15px"}}>
-        <Button variant="success" onClick={() => { props.setPage("Register")}} style = {{float : "left"}}>
-            Sign Up
-        </Button>
         <Button onClick={props.onHide} variant = "danger"style = {{float : "right", marginLeft:"10px"}}>Close</Button>
         <Button variant="primary" type="submit"style = {{float : "right"}}>
             Login
@@ -109,7 +114,7 @@ const RegisterPage = (props) => {
     <Modal.Body>
       <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
-          <Form.Control type="email" name = "username" placeholder="Enter email" onChange={props.handleChange}/>
+          <Form.Control type="email" name = "username" placeholder="Enter email" value = {props.value.username} onChange={props.handleChange}/>
           <Form.Text className="text-muted" >
           We'll never share your email with anyone else.
           </Form.Text>
@@ -135,5 +140,7 @@ const RegisterPage = (props) => {
   </Form>
   )
 }
+
+
 
 export default Login;

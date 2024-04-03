@@ -8,13 +8,48 @@ import Login from './pages/Login';
 import Logout from "./pages/Logout";
 import Footer from "./pages/Footer";
 import './NewArticle.css'; // CSS 파일을 import
+import MyPosts from './pages/MyPosts';
 
 function App() {
 
   let [modalOpenLogin, setModalOpenLogin] = useState(false);
+  let [data, setData] = useState(null);
   let [userId,setUserId] = useState("");
   let navigate = useNavigate();
   let [id, setId] = useState("");
+
+  const handleDelete = async (id) => {
+    const newData = data.filter(item => item._id !== id);
+    setData(newData); // 새로운 배열을 상태로 설정하여 렌더링합니다.
+    try{
+        await axios.delete('http://localhost:8080/delete/'+id)
+
+    }catch(error) {
+        console.error('Error deleting data:', error);
+    }
+  };
+
+  const handleData = async (data) => {
+    setData(data)
+  }
+  const handleAddData = async (newData) => {
+    // 이전 데이터 배열 복사
+    const newDataArray = [...data];
+    
+    // 새로운 객체 생성
+    const newObject = {
+      title: newData.title,
+      contents: newData.contents,
+      fileUrl: newData.file
+    };
+    console.log(newObject)
+    // 새로운 객체를 데이터 배열에 추가
+    newDataArray.push(newObject);
+  
+    // 데이터 배열 업데이트
+    setData(newDataArray);
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,8 +65,9 @@ function App() {
         console.error('Error fetching data:', error);
       }
     };
+    console.log(1)
     fetchData(); // fetchData 함수 호출
-  }, );
+  },[data] );
 
   return (
     <div className="App">
@@ -39,8 +75,8 @@ function App() {
         <Container>
           <Navbar.Brand onClick={() => { navigate("/")}}>Navbar</Navbar.Brand>
           <Nav className="me-auto">
-            <Nav.Link href="#home">Home</Nav.Link>
-            <Nav.Link href="#Favorites">Favorites</Nav.Link>
+            <Nav.Link onClick={() => { navigate("/")}}>Home</Nav.Link>
+            <Nav.Link onClick={() => { navigate("/favorite")}}>Favorites</Nav.Link>
           </Nav>
           {
             userId == "" ?
@@ -55,11 +91,7 @@ function App() {
               menuVariant="dark"
               bsPrefix='custom-dropdown'
             >
-              <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
-                Another action
-              </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => {navigate("/myposts")}}>My Posts</NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item onClick={() => { navigate("/logout")}}>
                 Log out
@@ -71,14 +103,15 @@ function App() {
         </Container>
       </Navbar>
       <Routes>
-        <Route path = "/" element = {<Main id = {id}></Main>}></Route>
+        <Route path = "/" element = {<Main id = {id} data = {data} handleDelete={handleDelete} handleData={handleData}></Main>}></Route>
         <Route path = "/logout" element = {<Logout/>}></Route>
+        <Route path = "/myposts" element={<MyPosts id = {id} data = {data} handleDelete={handleDelete} handleData={handleData}></MyPosts>}/>
         <Route path = "*" element={<div>MISSING</div>}/>
       </Routes>
       <Login show = {modalOpenLogin} onHide = {() => setModalOpenLogin(false)}  setUserId = {(e) => {setUserId(e)}}></Login>
       {userId == "" ?
       <></>:
-      <Footer></Footer>
+      <Footer handleAddData={handleAddData}></Footer>
       }
     </div>
   );

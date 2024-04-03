@@ -9,7 +9,9 @@ const MongoStore = require("connect-mongo")
 const { upload,deleteImage } = require('./modules/imageUploader');
 const { connectDB,ObjectId,getDB } = require('./modules/dbconnection'); 
 const {Init, passport } = require("./modules/passport")
+const bcrypt = require('bcrypt');
 const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken")
 dotenv.config()
 
 app.use(cookieParser())
@@ -48,6 +50,18 @@ app.use(passport.initialize())
 app.use(passport.session()) 
 
 app.get('/', async (요청, 응답) => {
+  let data = {
+    username : "",
+  }
+  if(요청.isAuthenticated()) {
+    data.username = 요청.user.nickname
+    data._id = 요청.user._id
+  }
+  응답.send(data)
+
+}) 
+
+app.get('/main', async (요청, 응답) => {
   let posts = await getDB().collection('post').aggregate([
     {
         $lookup: {
@@ -78,19 +92,26 @@ app.get('/', async (요청, 응답) => {
   ]).toArray();
   let data = {
     result :posts,
-    username : "",
-  }
-  if(요청.isAuthenticated()) {
-    data.username = 요청.user.nickname
-    data._id = 요청.user._id
   }
   응답.send(data)
 
 }) 
 
+app.get('/myposts/:id', async (req, res) => {
+  var o_id = new ObjectId(req.params.id) // Express.js 라우트 핸들러에서 사용자 아이디 가져오기
+  let posts = await getDB().collection("post").aggregate([
+      { $match: { userId: o_id } }
+  ]).toArray();
+  let data = {
+    result : posts
+  }
+  res.send(data)
+
+}) 
+
 
 app.post('/login', async (요청, 응답, next) => {
-
+  요청.body = {username: "aa@aa.com", password:'1234'}
   passport.authenticate('local', (error, user, info) => {
     if (error) return 응답.status(500).json(error)
     if (!user) return 응답.status(401).json(info.message)
@@ -101,6 +122,27 @@ app.post('/login', async (요청, 응답, next) => {
   })(요청, 응답, next)
 
 }) 
+
+app.post('/login/google', async (req, res, next) => {
+  let email = jwt.decode(req.body.credentialResponse.credential).email
+  //
+  req.body = {username: email, password:'0'}
+
+  passport.authenticate('local2', (error, user, info) => {
+    if (error) return res.status(500).json(error)
+    if (!user) { 
+      res.send(email)
+      return res.status(201)
+    }
+    req.logIn(user, (err) => {
+      if (err) return next(err)
+      res.status(200)
+      return res.redirect('/')
+    })
+  })(req, res, next)
+
+}) 
+
 app.get('/logout', function(req, res, next){
   req.logout(function(err) {
     if (err) { return next(err); }

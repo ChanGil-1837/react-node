@@ -1,6 +1,7 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require('bcrypt');
+const google = require("./GoogleStrategy")
 
 const Init = async (db, ObjectId) => {
     passport.serializeUser((user,done) => {
@@ -17,13 +18,14 @@ const Init = async (db, ObjectId) => {
         })
     })
 
-    passport.use(new LocalStrategy({
+    passport.use("local",new LocalStrategy({
         usernameField: 'username',  // 사용자 이름 필드를 'username'으로 설정
         passwordField: 'password'   // 비밀번호 필드를 'password'로 설정
         },
         
         async (username, password, done) => {
         try {
+            
             let result = await db.collection('user').findOne({ username });
             
             if (!result) {
@@ -40,6 +42,7 @@ const Init = async (db, ObjectId) => {
         }
         }
     ));
+    google(db)
 }
 
 module.exports = { Init, passport, };

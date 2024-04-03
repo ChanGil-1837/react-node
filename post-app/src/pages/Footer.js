@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
 
-const Footer = () => {
+const Footer = (props) => {
     const [showRipple, setShowRipple] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [file,setFile] = useState()
@@ -29,6 +29,14 @@ const Footer = () => {
             formData.append("title", value.title)
             formData.append("content", value.content)
             formData.append("file", file)
+            
+            const newData = {
+                title : value.title,
+                content : value.content,
+                file : URL.createObjectURL(file)
+            }
+            setFile(null)
+            props.handleAddData(newData)
             axios({
                 method:"post",
                 url:url,

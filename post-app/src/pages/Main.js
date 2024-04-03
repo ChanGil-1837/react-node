@@ -6,54 +6,27 @@ import Button from 'react-bootstrap/Button';
 
 const Main = (props) => {
 
-    const [data, setData] = useState(null);
-    const handleDelete = async (id,key) => {
-        // id와 일치하지 않는 요소만 필터링하여 새로운 배열을 만듭니다.
-        console.log(key)
-        const newData = data.filter(item => item._id !== id);
-        setData(newData); // 새로운 배열을 상태로 설정하여 렌더링합니다.
-        try{
-            await axios.delete('http://localhost:8080/delete/'+id)
-
-        }catch(error) {
-            console.error('Error deleting data:', error);
-        }
-    };
     useEffect(() => {
-        let timer = null; // 타이머 변수 초기화
-    
         const fetchData = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080');
-                const fetchedData = response.data.result;
-                setData(fetchedData)
-                
-                
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
+          try {
+            let response = await axios.get('http://localhost:8080/main');
+            props.handleData(response.data.result)
+
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
         };
-    
-        fetchData();
-        
-        return () => {
-            if (timer) {
-                clearInterval(timer); // 현재 실행 중인 타이머만 중지합니다.
-                timer = null; // 타이머 변수 초기화
-            }
-        };
-    }, []); // []를 두번째 인자로 주어서 한번만 호출되도록
+        fetchData(); // fetchData 함수 호출
+    },[] );
 
-
-
-    if(!data){
+    if(!props.data || props.data.length <1 ){
         return <></>
     }
 
     return( 
         <div className='Main'>
-            {data.map((item, index) => (
-                <CardComp style={{}} key={index} data={item} id = {props.id} handleDelete={() => handleDelete(item._id,item.filekey)}/>
+            {props.data.map((item, index) => (
+                <CardComp style={{}} key={index} data={item} id = {props.id} handleDelete={() => props.handleDelete(item._id,item.filekey)}/>
             ))}
         </div>
     )

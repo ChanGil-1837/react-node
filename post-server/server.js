@@ -5,13 +5,18 @@ const app = express();
 const server = require('http').createServer(app);
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
-const MongoStore = require("connect-mongo")
+const MongoStore = require("connect-mongo")(session)
 const { upload,deleteImage } = require('./modules/imageUploader');
-const { connectDB,ObjectId,getDB } = require('./modules/dbconnection'); 
+const { connectDB,ObjectId,getDB } = require('./modules/dbconnection');
 const {Init, passport } = require("./modules/passport")
 const bcrypt = require('bcrypt');
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken")
+
+const mongoose = require("mongoose")
+
+mongoose.connect(process.env.DB_ACCESS)
+
 dotenv.config()
 
 app.use(cookieParser())
@@ -19,19 +24,16 @@ app.use(express.json())
 
 
 app.use(cors({
-  origin :process.env.REACT_SERVER,
+  origin :process.env.REACT_APP_HOST,
   credentials:true,
   methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD','DELETE'],
 }));
-
 connectDB().then(()=>{
   app.listen(8080, () => {
-    console.log('http://localhost:8080 에서 서버 실행중')
+    console.log(process.env.REACT_APP_HOST + '8080 에서 서버 실행중')
   })
   Init(getDB(),ObjectId)
 });
-
-app.use(bodyParser.json()); 
 
 app.use(session({
   secret: process.env.SECRET_KEY,
@@ -40,9 +42,9 @@ app.use(session({
   cookie : {
     maxAge : 1000*60*60
   },
-  store : MongoStore.create({
-    mongoUrl : process.env.DB_ACCESS,
-    dbName : process.env.DB_NAME
+  store :new MongoStore({
+          mongooseConnection:mongoose.connection,
+          dbName : process.env.DB_NAME
   })
 }))
 

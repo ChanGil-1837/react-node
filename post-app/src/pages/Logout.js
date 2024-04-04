@@ -9,7 +9,7 @@ const Logout = () => {
     useEffect(() => {
         const fetchData = async () => {
         try {
-            const response = await axios.get(process.env.REACT_APP_HOST+'/logout');
+            const response = await axios.get(process.env.REACT_APP_SERVER_HOST+'/logout');
             setData(response.data.result);
 
             history("/")

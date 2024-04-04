@@ -24,7 +24,7 @@ const Footer = (props) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            var url = process.env.REACT_APP_HOST + "/post"
+            var url = process.env.REACT_APP_SERVER_HOST + "/post"
             const formData = new FormData()
             formData.append("title", value.title)
             formData.append("content", value.content)

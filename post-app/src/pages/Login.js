@@ -28,9 +28,9 @@ const Login = ({show, onHide, setUserId,}) =>{
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      var post = process.env.REACT_APP_HOST+"/login"
+      var post = process.env.REACT_APP_SERVER_HOST+"/login"
       if (page=="Register") {
-        post = process.env.REACT_APP_HOST+"/register"
+        post = process.env.REACT_APP_SERVER_HOST+"/register"
       }
       const response = await axios.post(post, value);
       if( response.status == 200 ) {

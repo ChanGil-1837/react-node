@@ -9,7 +9,7 @@ const MyPosts = (props) => {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            let response = await axios.get(process.env.REACT_APP_HOST+"/myposts/"+props.id);
+            let response = await axios.get(process.env.REACT_APP_SERVER_HOST+"/myposts/"+props.id);
             props.handleData(response.data.result)
           } catch (error) {
             console.error('Error fetching data:', error);

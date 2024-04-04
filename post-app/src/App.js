@@ -22,7 +22,7 @@ function App() {
     const newData = data.filter(item => item._id !== id);
     setData(newData); // 새로운 배열을 상태로 설정하여 렌더링합니다.
     try{
-        await axios.delete(process.env.REACT_APP_HOST+'/delete/'+id)
+        await axios.delete(REACT_APP_SERVER_HOST+'/delete/'+id)
 
     }catch(error) {
         console.error('Error deleting data:', error);
@@ -53,7 +53,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(process.env.REACT_APP_HOST);
+        const response = await axios.get(process.env.REACT_APP_SERVER_HOST);
         // userId 상태가 업데이트되면 메시지를 설정
         if (response.data.username === null || response.data.username == "") {
           setUserId("");

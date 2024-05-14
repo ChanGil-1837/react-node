@@ -29,7 +29,7 @@ const Footer = (props) => {
             formData.append("title", value.title)
             formData.append("content", value.content)
             formData.append("file", file)
-            
+		closeModal()            
             const newData = {
                 title : value.title,
                 content : value.content,

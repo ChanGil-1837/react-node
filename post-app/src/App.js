@@ -22,7 +22,7 @@ function App() {
     const newData = data.filter(item => item._id !== id);
     setData(newData); // 새로운 배열을 상태로 설정하여 렌더링합니다.
     try{
-        await axios.delete(REACT_APP_SERVER_HOST+'/delete/'+id)
+        await axios.delete(process.env.REACT_APP_SERVER_HOST+'/delete/'+id)
 
     }catch(error) {
         console.error('Error deleting data:', error);
@@ -42,7 +42,6 @@ function App() {
       contents: newData.contents,
       fileUrl: newData.file
     };
-    console.log(newObject)
     // 새로운 객체를 데이터 배열에 추가
     newDataArray.push(newObject);
   
@@ -53,7 +52,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(process.env.REACT_APP_SERVER_HOST);
+        const response = await axios.get(process.env.REACT_APP_SERVER_HOST+"/");
         // userId 상태가 업데이트되면 메시지를 설정
         if (response.data.username === null || response.data.username == "") {
           setUserId("");
@@ -65,7 +64,6 @@ function App() {
         console.error('Error fetching data:', error);
       }
     };
-    console.log(1)
     fetchData(); // fetchData 함수 호출
   },[data] );
 
@@ -76,7 +74,7 @@ function App() {
           <Navbar.Brand onClick={() => { navigate("/")}}>Navbar</Navbar.Brand>
           <Nav className="me-auto">
             <Nav.Link onClick={() => { navigate("/")}}>Home</Nav.Link>
-            <Nav.Link onClick={() => { navigate("/favorite")}}>Favorites</Nav.Link>
+            
           </Nav>
           {
             userId == "" ?

@@ -14,11 +14,11 @@ const GoogleLoginButton = (props) => {
         onSuccess={async (credentialResponse) => {
           try {
             const res = await axios.post(process.env.REACT_APP_SERVER_HOST+'/login/google', { credentialResponse });
-            if(res.status === 201){
-              sendData(res.data)
-            } else if (res.status === 200) {
-                props.onHide()
+            if(res.data.page === "register"){
+              sendData(res.data.email)
+            } else if (res.data.page === "login") {
                 props.setUserId(res.data.username)
+		            props.onHide()
             }
           } catch (error) {
             console.error(error);

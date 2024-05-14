@@ -24,22 +24,30 @@ const Login = ({show, onHide, setUserId,}) =>{
           [e.target.name] : e.target.value,
       })
   }
+  let [errorMessage,setErrorMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       var post = process.env.REACT_APP_SERVER_HOST+"/login"
       if (page=="Register") {
+        
         post = process.env.REACT_APP_SERVER_HOST+"/register"
       }
       const response = await axios.post(post, value);
+      
       if( response.status == 200 ) {
         onHide()
         setPage("Login")
         setUserId(response.data.username)
-      }
+      } 
     } catch (error) {
-      console.log("error", error);
+      if(error.response.status == 409) {
+        setErrorMessage(error.response.data)
+      } else if (error.response.status == 403) {
+        setErrorMessage(error.response.data)
+      }
+    
     }
   };
 
@@ -60,7 +68,7 @@ const Login = ({show, onHide, setUserId,}) =>{
       
         {
           page == "Login" ? <LoginPage onHide = {onHide} handleSubmit = {handleSubmit} handleChange = {handleChange} setPage={setPage} /> :
-                 <RegisterPage onHide = {onHide} value = {value} handleSubmit = {handleSubmit} handleChange = {handleChange} setPage = {setPage}/>
+                 <RegisterPage onHide = {onHide} value = {value} handleSubmit = {handleSubmit} handleChange = {handleChange} setPage = {setPage} errorMessage = {errorMessage}/>
         }   
 
       </div>
@@ -110,11 +118,14 @@ const RegisterPage = (props) => {
       <Modal.Title id="contained-modal-title-vcenter">
         Register
       </Modal.Title>
+        {
+          props.errorMessage == "" ? <></> : <><span style={{ color: "red" }}><br></br><br></br>{props.errorMessage}</span></>
+        }
     </Modal.Header>
     <Modal.Body>
       <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
-          <Form.Control type="email" name = "username" placeholder="Enter email" value = {props.value.username} onChange={props.handleChange}/>
+          <Form.Control type="email" name = "username" placeholder="Enter email" value = {props.value.username} readOnly onChange={props.handleChange}/>
           <Form.Text className="text-muted" >
           We'll never share your email with anyone else.
           </Form.Text>
@@ -129,7 +140,7 @@ const RegisterPage = (props) => {
       </Form.Group>
       <div style={{padding:"15px"}}>
         <Button variant="warning" onClick={() => { props.setPage("Login")}} style = {{float : "left"}}>
-            Sign In
+          Back To Sign In
         </Button> 
         <Button onClick={() => {props.onHide();  props.setPage("Login");}} variant = "danger"style = {{float : "right", marginLeft:"10px"}}>Close</Button>
         <Button variant="primary" type="submit"style = {{float : "right"}}>

@@ -29,13 +29,13 @@ const Init = async (db, ObjectId) => {
             let result = await db.collection('user').findOne({ username });
             
             if (!result) {
-            return done(null, false, { message: '아이디 DB에 없음' });
+                return done(null, false, { message: '아이디 DB에 없음' });
             }
             
             if (await bcrypt.compare(password,result.password)) {
-            return done(null, result);
+                return done(null, result);
             } else {
-            return done(null, false, { message: '비번 불일치' });
+                return done(null, false, { message: '비번 불일치' });
             }
         } catch (err) {
             return done(err);

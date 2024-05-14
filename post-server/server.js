@@ -24,13 +24,13 @@ app.use(express.json())
 
 
 app.use(cors({
-  origin :process.env.REACT_APP_HOST,
+	origin :"http://localhost:3000",
   credentials:true,
   methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD','DELETE'],
 }));
 connectDB().then(()=>{
   app.listen(8080, () => {
-    console.log(process.env.REACT_APP_HOST + '8080 에서 서버 실행중')
+    console.log(process.env.REACT_SERVER + '')
   })
   Init(getDB(),ObjectId)
 });
@@ -60,10 +60,10 @@ app.get('/', async (요청, 응답) => {
     data._id = 요청.user._id
   }
   응답.send(data)
-
 }) 
 
 app.get('/main', async (요청, 응답) => {
+  
   let posts = await getDB().collection('post').aggregate([
     {
         $lookup: {
@@ -92,11 +92,11 @@ app.get('/main', async (요청, 응답) => {
       $sort: { _id: -1 } // 날짜 필드를 기준으로 내림차순으로 정렬
     }
   ]).toArray();
+
   let data = {
     result :posts,
   }
   응답.send(data)
-
 }) 
 
 app.get('/myposts/:id', async (req, res) => {
@@ -113,7 +113,7 @@ app.get('/myposts/:id', async (req, res) => {
 
 
 app.post('/login', async (요청, 응답, next) => {
-  요청.body = {username: "aa@aa.com", password:'1234'}
+
   passport.authenticate('local', (error, user, info) => {
     if (error) return 응답.status(500).json(error)
     if (!user) return 응답.status(401).json(info.message)
@@ -127,19 +127,20 @@ app.post('/login', async (요청, 응답, next) => {
 
 app.post('/login/google', async (req, res, next) => {
   let email = jwt.decode(req.body.credentialResponse.credential).email
-  //
   req.body = {username: email, password:'0'}
 
   passport.authenticate('local2', (error, user, info) => {
-    if (error) return res.status(500).json(error)
+    if (error) {
+        return res.status(500).json(error)
+    }
     if (!user) { 
-      res.send(email)
-      return res.status(201)
+      res.send({"email":email,"page":"register"})
+      return res.status(200)
     }
     req.logIn(user, (err) => {
       if (err) return next(err)
-      res.status(200)
-      return res.redirect('/')
+      res.send({"page":"login","username":req.user.nickname})
+      return res.status(200)
     })
   })(req, res, next)
 
@@ -153,10 +154,24 @@ app.get('/logout', function(req, res, next){
 });
 
 app.post("/register", async (req, res) => {
-  let password = await bcrypt.hash(req.body.password, 10)
-  await getDB().collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname})
-  res.redirect("/")
+  
+  if(req.body.nickname=="" || req.body.nickname== null) {
+    res.status(403).send("Please enter a nickname.")
+    return
+  }
+  if(req.body.password.length < 6) {
+    res.status(403).send("The password length must exceed 6 characters.")
+    return
+  }
 
+  let one = await getDB().collection('user').findOne({nickname:req.body.nickname})
+  if(one == null) {
+    let password = await bcrypt.hash(req.body.password, 10)
+    await getDB().collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname})
+    res.redirect("/")
+  }else {
+    res.status(409).send("This nickname is already taken.")
+  }
 })
 
 app.post("/post", upload.single('file'), async (req, res) => {

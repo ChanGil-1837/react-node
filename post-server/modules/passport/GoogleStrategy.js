@@ -13,7 +13,7 @@ module.exports = (db) => {
             let result = await db.collection('user').findOne({ username });
             
             if (!result) {                
-                return done(null, false, { message: '아이디 DB에 없음' });
+                return done(null, false, { message: '1' });
             } else {
                 return done(null, result);
             }

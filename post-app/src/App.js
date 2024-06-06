@@ -35,11 +35,11 @@ function App() {
   const handleAddData = async (newData) => {
     // 이전 데이터 배열 복사
     const newDataArray = [...data];
-    
+
     // 새로운 객체 생성
     const newObject = {
       title: newData.title,
-      contents: newData.contents,
+      content: newData.contents,
       fileUrl: newData.file
     };
     // 새로운 객체를 데이터 배열에 추가

@@ -10,13 +10,13 @@ const { upload,deleteImage } = require('./modules/imageUploader');
 const { connectDB,ObjectId,getDB } = require('./modules/dbconnection');
 const {Init, passport } = require("./modules/passport")
 const bcrypt = require('bcrypt');
-const dotenv = require("dotenv");
-const jwt = require("jsonwebtoken")
 
+const jwt = require("jsonwebtoken")
 const mongoose = require("mongoose")
 
 mongoose.connect(process.env.DB_ACCESS)
 
+const dotenv = require("dotenv");
 dotenv.config()
 
 app.use(cookieParser())
@@ -127,7 +127,9 @@ app.post('/login', async (요청, 응답, next) => {
 
 app.post('/login/google', async (req, res, next) => {
   let email = jwt.decode(req.body.credentialResponse.credential).email
+  console.log(email)
   req.body = {username: email, password:'0'}
+  
 
   passport.authenticate('local2', (error, user, info) => {
     if (error) {
@@ -167,7 +169,7 @@ app.post("/register", async (req, res) => {
   let one = await getDB().collection('user').findOne({nickname:req.body.nickname})
   if(one == null) {
     let password = await bcrypt.hash(req.body.password, 10)
-    await getDB().collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname})
+    await getDB().collection('user').insertOne({username: req.body.username, password : password, nickname:req.body.nickname,remain:5})
     res.redirect("/")
   }else {
     res.status(409).send("This nickname is already taken.")
@@ -176,6 +178,11 @@ app.post("/register", async (req, res) => {
 
 app.post("/post", upload.single('file'), async (req, res) => {
   try {
+    const user = await getDB().collection('user').findOne({_id: new ObjectId(req.user._id)})
+    const remain = user ? user.remain : null;
+    if (remain == 0 )
+      return res.status(500).send("exceed")
+
     const fileUrl = req.file.location;
     const currentDate = new Date();
     const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')} ${currentDate.getHours().toString().padStart(2, '0')}`;
@@ -190,6 +197,7 @@ app.post("/post", upload.single('file'), async (req, res) => {
     });
     
     res.status(200).send("File Upload Complete");
+    await getDB().collection('user').updateOne({_id : new ObjectId(req.user._id)}, {$inc : {remain: -1}})
   } catch(error) {
     console.error(error);
     res.status(500).send("Error Uploading file");
@@ -204,4 +212,29 @@ app.delete("/delete/:id",async(req,res) => {
   getDB().collection('post').deleteOne({_id: o_id})
   // deleteImage(req.params.key)
   res.status(200).send("delete")
+})
+
+
+
+const cron = require("node-cron")
+
+async function schedule() {
+  
+  await getDB().collection('user').deleteMany({ _id : { $ne: new ObjectId(process.env.OWNERID)} });
+  const pipeline = [
+    { $match: { userId: { $ne: new ObjectId(process.env.OWNERID) } } },  // 조건에 맞는 문서 필터링
+  ];
+  filekeys = await getDB().collection('post').aggregate(pipeline).toArray()
+  await getDB().collection('post').deleteMany({ userId : {$ne :new ObjectId(process.env.OWNERID)} });
+  for(const key of filekeys) {
+    deleteImage(key.filekey)
+  }
+
+}
+
+cron.schedule('0 0 * * *', () => {
+  schedule();
+}, {
+  scheduled : true,
+  timezone : "Asia/Seoul"
 })

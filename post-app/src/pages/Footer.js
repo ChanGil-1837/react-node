@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
@@ -7,6 +7,8 @@ const Footer = (props) => {
     const [showRipple, setShowRipple] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [file,setFile] = useState()
+    const [errorMessage,setErrorMessage] = useState()
+
     const [value, setValue] = useState({
         title:"",
         content: "",
@@ -18,25 +20,39 @@ const Footer = (props) => {
 
     const closeModal = () => {
         setShowModal(false);
-
+        setErrorMessage(null)
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if(value.title == "") {
+            setErrorMessage("Title is emtpy")
+            return
+        }
+        if(value.content == "") {
+            setErrorMessage("Content is emtpy")
+            return
+        }
+        if(file == null) {
+            setErrorMessage("Image is empty")
+            return
+        }
+        
         try {
             var url = process.env.REACT_APP_SERVER_HOST + "/post"
             const formData = new FormData()
             formData.append("title", value.title)
             formData.append("content", value.content)
             formData.append("file", file)
-		closeModal()            
+		    
             const newData = {
                 title : value.title,
                 content : value.content,
                 file : URL.createObjectURL(file)
             }
             setFile(null)
-            props.handleAddData(newData)
+            
             axios({
                 method:"post",
                 url:url,
@@ -44,8 +60,11 @@ const Footer = (props) => {
                 headers:{'Content-Type':'multipart/form-data'}
             }).then((res)=>{
                 if (res.status == 200) {
+                    props.handleAddData(newData)
                     closeModal()
                 }
+            }).catch((error) => {
+                setErrorMessage("Your post count exceeded today.")
             })
         } catch (error) {
             console.log("error", error);
@@ -97,6 +116,9 @@ const Footer = (props) => {
             <div className="ModalWindow" onClick={e => e.stopPropagation()}>
                 <div style={{ margin: "20px" }}>
                     <h2>New Article</h2>
+                    {
+                        errorMessage == "" ? <></> : <><span style={{ color: "red" }}><br></br><br></br>{errorMessage}</span></>
+                    }
                     {
                         file != null ? <img src={URL.createObjectURL(file)} alt="preview" width="200" height="200"/> : null
                     }
